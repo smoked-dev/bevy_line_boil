@@ -130,9 +130,9 @@ fn vertex(vertex_no_morph: Vertex) -> VertexOutput {
     // Quantize time to create frame-held effect (classic animation look)
     let time_quantized = quantize_time(line_boil.time, line_boil.frame_rate);
 
-    // Generate smooth displacement based on world position (for spatial coherence)
-    // but apply it in screen space X/Y for that hand-drawn 2D wobble
-    let noise = smooth_turbulent_noise(world_position.xyz, time_quantized, line_boil.seed);
+    // Use screen-space position (NDC) for noise - movement through 3D space won't affect boil
+    let screen_pos = clip_position.xy / clip_position.w;
+    let noise = smooth_turbulent_noise(vec3<f32>(screen_pos, 0.0), time_quantized, line_boil.seed);
 
     // Displace in screen space (X and Y only) - like lines drawn on paper wobbling
     // Scale by w to keep displacement consistent regardless of depth
