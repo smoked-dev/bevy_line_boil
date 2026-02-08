@@ -61,6 +61,7 @@ LineBoil::new()
 
 | bevy_line_boil | Bevy |
 |----------------|------|
+| 0.2            | 0.18 |
 | 0.1            | 0.17 |
 
 ## License
