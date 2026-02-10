@@ -9,17 +9,15 @@
     forward_io::{Vertex, VertexOutput},
     view_transformations::position_world_to_clip,
 }
+#import bevy_render::globals::Globals
 
-// Line boil settings uniform (time is passed through material uniform)
-struct LineBoilSettings {
-    intensity: f32,
-    frame_rate: f32,
-    noise_frequency: f32,
-    seed: f32,
-    time: f32,
-};
+@group(0) @binding(1) var<uniform> globals: Globals;
 
-@group(#{MATERIAL_BIND_GROUP}) @binding(100) var<uniform> line_boil: LineBoilSettings;
+// Hardcoded line boil settings (subtle preset)
+const INTENSITY: f32 = 0.008;
+const FRAME_RATE: f32 = 8.0;
+const NOISE_FREQUENCY: f32 = 6.0;
+const SEED: f32 = 0.0;
 
 // ============================================================================
 // Smooth value noise functions (spatially coherent - nearby vertices move together)
@@ -73,7 +71,7 @@ fn quantize_time(time: f32, fps: f32) -> f32 {
 
 // Smooth 3D displacement vector - nearby vertices get similar displacement
 fn smooth_turbulent_noise(pos: vec3<f32>, time_q: f32, seed: f32) -> vec3<f32> {
-    let p = pos * line_boil.noise_frequency + seed;
+    let p = pos * NOISE_FREQUENCY + seed;
     let t = time_q;
 
     // Sample smooth noise for each axis with different offsets
@@ -128,16 +126,16 @@ fn vertex(vertex_no_morph: Vertex) -> VertexOutput {
     var clip_position = position_world_to_clip(world_position.xyz);
 
     // Quantize time to create frame-held effect (classic animation look)
-    let time_quantized = quantize_time(line_boil.time, line_boil.frame_rate);
+    let time_quantized = quantize_time(globals.time, FRAME_RATE);
 
     // Use screen-space position (NDC) for noise - movement through 3D space won't affect boil
     let screen_pos = clip_position.xy / clip_position.w;
-    let noise = smooth_turbulent_noise(vec3<f32>(screen_pos, 0.0), time_quantized, line_boil.seed);
+    let noise = smooth_turbulent_noise(vec3<f32>(screen_pos, 0.0), time_quantized, SEED);
 
     // Displace in screen space (X and Y only) - like lines drawn on paper wobbling
     // Scale by w to keep displacement consistent regardless of depth
-    clip_position.x += noise.x * line_boil.intensity * clip_position.w;
-    clip_position.y += noise.y * line_boil.intensity * clip_position.w;
+    clip_position.x += noise.x * INTENSITY * clip_position.w;
+    clip_position.y += noise.y * INTENSITY * clip_position.w;
 
     // ========================================================================
 
