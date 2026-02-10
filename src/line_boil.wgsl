@@ -9,9 +9,7 @@
     forward_io::{Vertex, VertexOutput},
     view_transformations::position_world_to_clip,
 }
-#import bevy_render::globals::Globals
-
-@group(0) @binding(1) var<uniform> globals: Globals;
+#import bevy_pbr::mesh_view_bindings::globals
 
 // Hardcoded line boil settings (subtle preset)
 const INTENSITY: f32 = 0.008;
